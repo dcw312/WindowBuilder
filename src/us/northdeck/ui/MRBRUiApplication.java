@@ -21,12 +21,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.IOException;
+import javax.swing.JDesktopPane;
+import javax.swing.JPanel;
 
 public class MRBRUiApplication {
 
 	private JFrame frmMrbrEditor;
 	private SchemaFlattenerPanel schemaFlatternerPanel = new SchemaFlattenerPanel();
 	private ApplicationController ac = new ApplicationController();
+	private ConsoleFrame consoleFrame = new ConsoleFrame();
 
 	/**
 	 * Launch the application.
@@ -57,7 +60,7 @@ public class MRBRUiApplication {
 	private void initialize() {
 		frmMrbrEditor = new JFrame();
 		frmMrbrEditor.setTitle("MRBR Editor");
-		frmMrbrEditor.setBounds(100, 100, 762, 348);
+		frmMrbrEditor.setBounds(100, 100, 762, 427);
 		frmMrbrEditor.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
 		JMenuBar menuBar = new JMenuBar();
@@ -75,15 +78,17 @@ public class MRBRUiApplication {
 		JMenuItem mntmFlattenSchema = new JMenuItem("Flatten Schema");
 		mnTools.add(mntmFlattenSchema);
 		
-		JTextArea consoleTextArea = new JTextArea();
-		frmMrbrEditor.getContentPane().add(consoleTextArea, BorderLayout.SOUTH);
-		
 		setDefaultFrame();
-		ac.setConsoleTextArea(consoleTextArea);
+		this.consoleFrame.setVisible(true);
+		ac.setConsoleTextArea(this.consoleFrame.consoleTextArea);
+		
 	}
 
 	private void setDefaultFrame() {
 		frmMrbrEditor.getContentPane().add(schemaFlatternerPanel);
+		
+		
+		
 		String defaultFile = "C:\\cvs\\commonXsd\\Best_Buy_Mobile\\Activations\\CAP\\repository\\US\\content\\validations\\POSTPAID_PLANS_REQUEST.XSD";
 		schemaFlatternerPanel.setFileName(new File(defaultFile));
 		MouseListener l = new MouseListener() {
@@ -146,6 +151,8 @@ public class MRBRUiApplication {
 					e.printStackTrace();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
+					ac.c.printStackTrace(e);
+					//ac.c.println(e.getMessage());
 					e.printStackTrace();
 				}
 			}
