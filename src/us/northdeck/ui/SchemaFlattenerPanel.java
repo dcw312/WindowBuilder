@@ -3,6 +3,7 @@ package us.northdeck.ui;
 import javax.swing.JPanel;
 import java.awt.GridLayout;
 import java.io.File;
+import java.util.Vector;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -12,6 +13,7 @@ import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.RowSpec;
 import com.jgoodies.forms.factories.FormFactory;
 import javax.swing.JProgressBar;
+import javax.swing.JComboBox;
 
 public class SchemaFlattenerPanel extends JPanel {
 
@@ -22,7 +24,8 @@ public class SchemaFlattenerPanel extends JPanel {
 	private JTextField schemaFileName;
 	JButton button = new JButton("...");
 	private JButton btnFlatten;
-	private JProgressBar progressBar;
+	protected Vector<String> nsVector = new Vector<String>();
+	protected JComboBox nsBox = new JComboBox(nsVector);
 
 
 	/**
@@ -31,7 +34,7 @@ public class SchemaFlattenerPanel extends JPanel {
 	public SchemaFlattenerPanel() {
 		setLayout(new FormLayout(new ColumnSpec[] {
 				ColumnSpec.decode("58px"),
-				ColumnSpec.decode("564px"),
+				ColumnSpec.decode("564px:grow"),
 				ColumnSpec.decode("121px"),},
 			new RowSpec[] {
 				RowSpec.decode("30px"),
@@ -50,11 +53,11 @@ public class SchemaFlattenerPanel extends JPanel {
 		
 		add(button, "3, 1, fill, fill");
 		
-		btnFlatten = new JButton("Flatten");
-		add(btnFlatten, "2, 3");
+		nsBox = new JComboBox();
+		add(nsBox, "2, 3, fill, default");
 		
-		progressBar = new JProgressBar();
-		add(progressBar, "2, 5");
+		btnFlatten = new JButton("Flatten");
+		add(btnFlatten, "2, 5");
 
 	}
 	
@@ -66,5 +69,12 @@ public class SchemaFlattenerPanel extends JPanel {
 		schemaFileName.setText(f.getAbsolutePath());
 	}
 	
+	String getFileName() {
+		return schemaFileName.getText();
+	}
+	
+	JButton getBtnFlatten () {
+		return btnFlatten;
+	}
 
 }
