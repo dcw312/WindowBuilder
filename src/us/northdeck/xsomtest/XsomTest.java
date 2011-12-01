@@ -113,8 +113,13 @@ public class XsomTest {
  */
 public static void writeFlatSchemaFile(XSSchemaSet sset, String ns, File outFile)
 		throws ParserConfigurationException, TransformerException, IOException {
-	Document newSchemaDoc = visitElementDeclarations(sset, ns);
+	Document[] docs  = visitElementDeclarations(sset, ns);
+	
+	Document newSchemaDoc = docs[0];
+	
 	writeDocumentXML(newSchemaDoc, outFile);
+	
+	writeDocumentXML(docs[1], new File(outFile.getAbsolutePath() + ".bxr.xml") );
 }
 
 /**
@@ -187,7 +192,7 @@ public static XSSchemaSet getSchemaSet(File file) throws Exception {
  * @throws TransformerException
  * @throws IOException
  */
-private static Document visitElementDeclarations(XSSchemaSet sset, String ns)
+private static Document[] visitElementDeclarations(XSSchemaSet sset, String ns)
 		throws ParserConfigurationException, TransformerException, IOException {
 	
 	XSSchema plans = sset.getSchema(ns);
@@ -202,7 +207,10 @@ private static Document visitElementDeclarations(XSSchemaSet sset, String ns)
 		//see MRBRComponentVisitor for handling of each schema element
 		elDec.visit(v);
 	}
-	return v.getDocument();
+	
+	
+	Document[] docs = {v.getDocument(),v.getPaths()};
+	return  docs ;
 	
 	
 	

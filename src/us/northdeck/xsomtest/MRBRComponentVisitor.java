@@ -38,10 +38,12 @@ public class MRBRComponentVisitor implements XSVisitor {
 
 
 	private MRBRSchema doc;
+	private Document bxrDoc;
 	private Integer indentLevel;
 	private Element table;
 	//private Element currentEl;
 	private Stack<Element> elStack;
+	private Stack<String> pathStack;
 	public String MAX_LENGTH = "maxLength";
 	public String MIN_LENGTH = "minLength";
 	public String ENUMERATION = "ennumeration";
@@ -52,6 +54,7 @@ public class MRBRComponentVisitor implements XSVisitor {
 
 	public void initDoc() throws ParserConfigurationException {
 		this.document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		this.bxrDoc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		
 		doc = new MRBRSchema(document);
 		table = doc.createElement("schema");
@@ -64,6 +67,11 @@ public class MRBRComponentVisitor implements XSVisitor {
 		elStack.push(table);
 		
 		this.indentLevel = 0;
+		
+		pathStack = new Stack<String>();
+		
+		this.bxrDoc.appendChild(this.bxrDoc.createElementNS("bxr", "appinfo"));
+		
 	}
 
 	public Document getDocument() {
@@ -112,10 +120,30 @@ public class MRBRComponentVisitor implements XSVisitor {
 		elStack.push(doc.createElement("element"));
 		elStack.peek().setAttribute("name", name);
 		
+		//maintain xpath stack
+		pathStack.push(name);
+		
+		//add bxr location
+		addBxrLocation();
+		
 		if (document.getElementsByTagName("element").getLength() == 0) {
 			document.getDocumentElement().appendChild(elStack.peek());
 		}
 		decl.getType().visit(this);
+		
+		pathStack.pop(); //move up the xpath tree		
+	}
+
+	private void addBxrLocation() {
+		String xpath = "";
+		for (String s  : this.pathStack) {
+			xpath = xpath + "/" + s;
+		}
+		
+		Element el = this.bxrDoc.createElementNS("bxr", "location");
+		el.setAttribute("path", xpath );
+		this.bxrDoc.getDocumentElement().appendChild( el);
+		
 	}
 
 	@Override
@@ -251,6 +279,10 @@ public class MRBRComponentVisitor implements XSVisitor {
 	public void xpath(XSXPath xp) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	public Document getPaths() {
+		return this.bxrDoc;
 	}
 
 }
