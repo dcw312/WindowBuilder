@@ -48,9 +48,38 @@ public class MRBRComponentVisitor implements XSVisitor {
 	public String MIN_LENGTH = "minLength";
 	public String ENUMERATION = "ennumeration";
 	public String PATTERN = "pattern";
+	private Cardinality card;
 	
 	class AnyTypeRestrictionException extends Exception {
 		private static final long serialVersionUID = -1357312370127919817L;}
+	
+	class Cardinality {
+		int min;
+		int max;
+		String desc;
+		
+		public Cardinality(int min, int max) {
+			desc = new String();
+			this.min = min;
+			this.max = max;
+			if (min == 0) {
+				if (max == 1) {
+					desc = "0..1";
+				}
+				if (max == -1) {
+					desc = "0..*";
+				}
+			}
+			if (min == 1) {
+				if (max == 1) {
+					desc = "1..1";
+				}
+				if (max == -1) {
+					desc = "1..*";
+				}
+			}
+		}
+	}
 
 	public void initDoc() throws ParserConfigurationException {
 		this.document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -110,8 +139,15 @@ public class MRBRComponentVisitor implements XSVisitor {
 		Element c = doc.createElement(group.getCompositor().toString());
 		elStack.push(c);
 		for ( XSParticle p : group.getChildren() ){
+			setCardinality(p);
 			p.visit(this);
 		}
+	}
+
+	private void setCardinality(XSParticle p) {
+		int maxOccurs = p.getMaxOccurs().intValue();
+		int minOccurs = p.getMinOccurs().intValue();
+		this.card = new Cardinality(minOccurs, maxOccurs);		
 	}
 
 	@Override
@@ -132,6 +168,8 @@ public class MRBRComponentVisitor implements XSVisitor {
 		decl.getType().visit(this);
 		
 		pathStack.pop(); //move up the xpath tree		
+		
+		
 	}
 
 	private void addBxrLocation() {
@@ -142,6 +180,9 @@ public class MRBRComponentVisitor implements XSVisitor {
 		
 		Element el = this.bxrDoc.createElementNS("bxr", "location");
 		el.setAttribute("path", xpath );
+		if (this.card != null) {
+			el.setAttribute("cardinality", this.card.desc);
+		}
 		this.bxrDoc.getDocumentElement().appendChild( el);
 		
 	}
@@ -194,14 +235,18 @@ public class MRBRComponentVisitor implements XSVisitor {
 	 * @param p XSParticle of the element on the top of the elStack stack
 	 */
 	private void addOccurs(XSParticle p) {
-		if (p.getMaxOccurs().intValue() != 1) {
-			if (p.getMaxOccurs().intValue() == -1) {
+		int maxOccurs = p.getMaxOccurs().intValue();
+		int minOccurs = p.getMinOccurs().intValue();
+		
+		if (maxOccurs != 1) {
+			if (maxOccurs == -1) {
 				elStack.peek().setAttribute("maxOccurs", "unbounded");
 			} else {
 				elStack.peek().setAttribute("maxOccurs", p.getMaxOccurs().toString());
 			}
 		}
-		if (p.getMinOccurs().intValue() != 1) {
+		
+		if (minOccurs != 1) {
 			
 			elStack.peek().setAttribute("minOccurs", p.getMinOccurs().toString());
 		}
@@ -214,6 +259,7 @@ public class MRBRComponentVisitor implements XSVisitor {
 
 	@Override
 	public void annotation(XSAnnotation ann) {
+		
 	}
 
 	@Override
