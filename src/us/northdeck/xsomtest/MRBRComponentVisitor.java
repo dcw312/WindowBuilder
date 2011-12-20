@@ -20,6 +20,7 @@ import com.sun.xml.xsom.XSElementDecl;
 import com.sun.xml.xsom.XSFacet;
 import com.sun.xml.xsom.XSIdentityConstraint;
 import com.sun.xml.xsom.XSModelGroup;
+import com.sun.xml.xsom.XSModelGroup.Compositor;
 
 import com.sun.xml.xsom.XSModelGroupDecl;
 import com.sun.xml.xsom.XSNotation;
@@ -44,11 +45,14 @@ public class MRBRComponentVisitor implements XSVisitor {
 	//private Element currentEl;
 	private Stack<Element> elStack;
 	private Stack<String> pathStack;
+	private Stack<Integer> choiceStack;
 	public String MAX_LENGTH = "maxLength";
 	public String MIN_LENGTH = "minLength";
 	public String ENUMERATION = "ennumeration";
 	public String PATTERN = "pattern";
 	private Cardinality card;
+	private boolean inChoice = false;
+	private int choiceNumber = 0;
 	
 	class AnyTypeRestrictionException extends Exception {
 		private static final long serialVersionUID = -1357312370127919817L;}
@@ -95,6 +99,8 @@ public class MRBRComponentVisitor implements XSVisitor {
 		elStack = new Stack<Element>();
 		elStack.push(table);
 		
+		choiceStack = new Stack<Integer>();
+		
 		this.indentLevel = 0;
 		
 		pathStack = new Stack<String>();
@@ -135,13 +141,24 @@ public class MRBRComponentVisitor implements XSVisitor {
 
 	@Override
 	public void modelGroup(XSModelGroup group) {
-		print(group.getCompositor().toString());
-		Element c = doc.createElement(group.getCompositor().toString());
+		
+		Compositor compositor = group.getCompositor();
+		if (compositor == XSModelGroup.CHOICE) incrementChoiceStack();
+			//this.inChoice = true;
+		print(compositor.toString());
+		Element c = doc.createElement(compositor.toString());
 		elStack.push(c);
 		for ( XSParticle p : group.getChildren() ){
 			setCardinality(p);
 			p.visit(this);
 		}
+		if (compositor == XSModelGroup.CHOICE) choiceStack.pop();
+	}
+
+	private void incrementChoiceStack() {
+		choiceNumber++;
+		choiceStack.push(choiceNumber);
+		
 	}
 
 	private void setCardinality(XSParticle p) {
@@ -182,6 +199,10 @@ public class MRBRComponentVisitor implements XSVisitor {
 		el.setAttribute("path", xpath );
 		if (this.card != null) {
 			el.setAttribute("cardinality", this.card.desc);
+		}
+		if (!choiceStack.empty()) {
+			el.setAttribute("choice", choiceStack.peek().toString());
+			this.inChoice = false;
 		}
 		this.bxrDoc.getDocumentElement().appendChild( el);
 		
@@ -259,7 +280,7 @@ public class MRBRComponentVisitor implements XSVisitor {
 
 	@Override
 	public void annotation(XSAnnotation ann) {
-		
+		ann.toString();
 	}
 
 	@Override
