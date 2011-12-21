@@ -2,6 +2,8 @@ package us.northdeck.ui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.io.File;
+
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
@@ -14,7 +16,7 @@ public class FileChooserDialog extends JDialog {
 	 */
 	private static final long serialVersionUID = -83549757373558469L;
 	private final JPanel contentPanel = new JPanel();
-	public final JFileChooser fileChooser = new JFileChooser();
+	public final JFileChooser fileChooser;
 
 	/**
 	 * Launch the application.
@@ -33,6 +35,12 @@ public class FileChooserDialog extends JDialog {
 	 * Create the dialog.
 	 */
 	public FileChooserDialog() {
+		File dir = new File ("C:\\cvs\\commonXsd\\Best_Buy_Mobile\\Activations\\CAP\\repository\\US\\content\\validations");
+		if (dir.exists()) {
+			this.fileChooser = new JFileChooser(dir);
+		} else {
+			this.fileChooser = new JFileChooser();
+		}
 		setBounds(100, 100, 450, 300);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setLayout(new FlowLayout());

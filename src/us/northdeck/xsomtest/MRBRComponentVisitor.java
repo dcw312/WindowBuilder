@@ -53,6 +53,7 @@ public class MRBRComponentVisitor implements XSVisitor {
 	private Cardinality card;
 	private boolean inChoice = false;
 	private int choiceNumber = 0;
+	private Integer choiceOption = 1;
 	
 	class AnyTypeRestrictionException extends Exception {
 		private static final long serialVersionUID = -1357312370127919817L;}
@@ -64,12 +65,13 @@ public class MRBRComponentVisitor implements XSVisitor {
 		
 		public Cardinality(int min, int max) {
 			desc = new String();
+			desc = "?";
 			this.min = min;
 			this.max = max;
 			if (min == 0) {
 				if (max == 1) {
 					desc = "0..1";
-				}
+				} 
 				if (max == -1) {
 					desc = "0..*";
 				}
@@ -105,7 +107,12 @@ public class MRBRComponentVisitor implements XSVisitor {
 		
 		pathStack = new Stack<String>();
 		
-		this.bxrDoc.appendChild(this.bxrDoc.createElementNS("bxr", "appinfo"));
+		Element bxrRoot = this.bxrDoc.createElementNS("bxr", "appinfo");
+		bxrRoot.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+		bxrRoot.setAttribute("xsi:schemaLocation", "com.bestbuy.bbym.bxr ../XSD/SimpleRulesSyntax.xsd");
+		bxrRoot.setAttribute("xmlns:bxr", "com.bestbuy.bbym.bxr");
+		bxrRoot.setAttribute("xmlns", "com.bestbuy.bbym.bxr");
+		this.bxrDoc.appendChild(bxrRoot);
 		
 	}
 
@@ -143,14 +150,19 @@ public class MRBRComponentVisitor implements XSVisitor {
 	public void modelGroup(XSModelGroup group) {
 		
 		Compositor compositor = group.getCompositor();
-		if (compositor == XSModelGroup.CHOICE) incrementChoiceStack();
+		if (compositor == XSModelGroup.CHOICE) {
+			incrementChoiceStack();
+			choiceOption = 1;
+		}
 			//this.inChoice = true;
 		print(compositor.toString());
 		Element c = doc.createElement(compositor.toString());
 		elStack.push(c);
 		for ( XSParticle p : group.getChildren() ){
+			if (compositor == XSModelGroup.CHOICE) this.inChoice = true;
 			setCardinality(p);
 			p.visit(this);
+			if (compositor == XSModelGroup.CHOICE) choiceOption++;
 		}
 		if (compositor == XSModelGroup.CHOICE) choiceStack.pop();
 	}
@@ -200,9 +212,14 @@ public class MRBRComponentVisitor implements XSVisitor {
 		if (this.card != null) {
 			el.setAttribute("cardinality", this.card.desc);
 		}
-		if (!choiceStack.empty()) {
+		if (!choiceStack.empty()  ) {
 			el.setAttribute("choice", choiceStack.peek().toString());
-			this.inChoice = false;
+			//el.setAttribute("option", this.choiceOption.toString());
+			if (this.inChoice) {
+				el.setAttribute("firstEl", "true");
+				this.inChoice = false;
+			}
+			
 		}
 		this.bxrDoc.getDocumentElement().appendChild( el);
 		
