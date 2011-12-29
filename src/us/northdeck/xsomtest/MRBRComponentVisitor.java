@@ -107,10 +107,11 @@ public class MRBRComponentVisitor implements XSVisitor {
 		
 		pathStack = new Stack<String>();
 		
-		Element bxrRoot = this.bxrDoc.createElementNS("bxr", "appinfo");
+		Element bxrRoot = this.bxrDoc.createElementNS("com.bestbuy.bbym.bxr", "appinfo");
+		//Element bxrRoot = this.bxrDoc.createElement("appinfo");
 		bxrRoot.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 		bxrRoot.setAttribute("xsi:schemaLocation", "com.bestbuy.bbym.bxr ../XSD/SimpleRulesSyntax.xsd");
-		bxrRoot.setAttribute("xmlns:bxr", "com.bestbuy.bbym.bxr");
+		//bxrRoot.setAttribute("xmlns:bxr", "com.bestbuy.bbym.bxr");
 		bxrRoot.setAttribute("xmlns", "com.bestbuy.bbym.bxr");
 		this.bxrDoc.appendChild(bxrRoot);
 		
@@ -207,7 +208,11 @@ public class MRBRComponentVisitor implements XSVisitor {
 			xpath = xpath + "/" + s;
 		}
 		
-		Element el = this.bxrDoc.createElementNS("bxr", "location");
+		Element el = this.bxrDoc.createElementNS("com.bestbuy.bbym.bxr", "location");
+		//elDescription
+		Element elDesc = this.bxrDoc.createElementNS("com.bestbuy.bbym.bxr", "elDescription");
+		elDesc.setTextContent(" ");
+		el.appendChild(elDesc);
 		el.setAttribute("path", xpath );
 		if (this.card != null) {
 			el.setAttribute("cardinality", this.card.desc);

@@ -70,8 +70,11 @@ public class ApplicationController {
 	
 	protected void handleFlattenButton(SchemaFlattenerPanel schemaFlatternerPanel) throws SchemaNotFoundException, ParserConfigurationException, TransformerException, IOException {
 		if (sset == null) {
+			schemaFlatternerPanel.getBtnFlatten().setOpaque(true);
 			startSchemaLoad(schemaFlatternerPanel);
+			schemaFlatternerPanel.getBtnFlatten().setOpaque(false);
 		} else {
+			schemaFlatternerPanel.getBtnFlatten().setOpaque(true);
 			String ns = (String) schemaFlatternerPanel.nsBox.getSelectedItem();
 			c.println(ns);
 			File inFile = new File(schemaFlatternerPanel.getFileName());
@@ -79,6 +82,9 @@ public class ApplicationController {
 			File outFile = new File (inFile.getAbsolutePath() + ".1");
 			c.println("Writing: "+outFile.toString());
 			XsomTest.writeFlatSchemaFile(sset, ns, outFile);
+			schemaFlatternerPanel.getBtnFlatten().setOpaque(false);
+			sset = null;
+			schemaFlatternerPanel.nsBox.removeAllItems();
 		}
 		
 	}
