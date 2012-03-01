@@ -10,6 +10,7 @@ import javax.swing.JTextArea;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import com.sun.xml.xsom.XSSchema;
 import com.sun.xml.xsom.XSSchemaSet;
 import us.northdeck.xsomtest.XsomTest;
 
@@ -18,6 +19,7 @@ public class ApplicationController {
 	private XSSchemaSet sset;
 	private String[] nsList = new String[1];
 	protected Console c;
+	private String[] commonNamespaces = {"cap/common", "request/header", "XMLSchema", "response/header" };
 	
 	ApplicationController(){
 		c = new SystemConsole();
@@ -102,7 +104,37 @@ public class ApplicationController {
 		
 		//schemaFlatternerPanel.nsVector.addAll(nsList1);
 		
+		String primaryNameSpace = getSpecificNamespace(sset);
+		schemaFlatternerPanel.nsBox.setSelectedItem(primaryNameSpace);
 		
+		
+		//if (schemaFlatternerPanel.nsBox.
+		
+	}
+
+	private String getSpecificNamespace(XSSchemaSet sset2) {
+		String specificNameSpace = "";
+		Collection<XSSchema> schemas = sset2.getSchemas();
+		for (XSSchema schema : schemas) {
+			if (!includesBlackList(schema)) {
+				specificNameSpace = schema.getTargetNamespace();
+			}
+		}
+		return specificNameSpace;
+	}
+
+	/**
+	 * @param schema
+	 * @return
+	 */
+	private boolean includesBlackList(XSSchema schema) {
+		boolean test = true;
+		int len = this.commonNamespaces.length;
+		for (int i =0; i < len; i++) {
+			String tag = this.commonNamespaces[i];
+			test = test || schema.getTargetNamespace().contains(tag);
+		}
+		return test; 
 	}
 
 	class TextAreaConsole implements Console {
